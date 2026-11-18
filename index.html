@@ -104,7 +104,13 @@
     #etapa-1::after { content:''; position:absolute; z-index:-1; inset:0; background:linear-gradient(100deg,#211722a0,#31212c45),url('foto/casal-carta-2.jpg') center/cover no-repeat; animation:alternar-carta 13s ease-in-out infinite; }
     @keyframes alternar-carta { 0%,42% { opacity:0; } 50%,92% { opacity:1; } 100% { opacity:0; } }
     #etapa-2::before { background-image:linear-gradient(100deg,#2117229c,#31212c38),url('foto/casal-musica.jpg'); }
-    #etapa-3::before { background-image:linear-gradient(135deg,#352537,#745568 55%,#b98578); }
+    #etapa-3::before { background:#241a24; }
+    .cinema-backdrop { position:absolute; z-index:-1; inset:0; overflow:hidden; pointer-events:none; background:#241a24; }
+    .cinema-shot { position:absolute; inset:-3%; width:106%; height:106%; object-fit:cover; object-position:center 42%; opacity:0; transform:scale(1.04); filter:saturate(.82) contrast(1.08); transition:opacity 1.8s ease; }
+    .cinema-shot.is-active { opacity:1; animation:cinema-drift 8s ease-in-out both; }
+    .cinema-backdrop::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,#171118c9 0%,#21161b70 53%,#1d141c45 100%),linear-gradient(0deg,#171118a8 0%,transparent 45%,#17111828 100%),radial-gradient(ellipse at center,transparent 38%,#120d14a8 100%); }
+    @keyframes cinema-drift { from { transform:scale(1.04) translate3d(0,0,0); } to { transform:scale(1.12) translate3d(-1.2%,-.6%,0); } }
+    @media (prefers-reduced-motion:reduce) { .cinema-shot, .cinema-shot.is-active { animation:none; transition:none; transform:scale(1.02); } }
     .panel { width:min(1000px,100%); margin:auto; padding:clamp(28px,5vw,54px); position:relative; box-shadow:0 24px 70px #120c1b45; }
     .panel.music, .panel.video { min-height:440px; }
     .panel.music { display:block; max-width:820px; background:rgba(255,248,239,.93); backdrop-filter:blur(6px); }
@@ -210,6 +216,10 @@
       </section>
 
       <section class="screen" id="etapa-3">
+      <div class="cinema-backdrop" aria-hidden="true">
+        <img class="cinema-shot is-active" src="foto/8mile-casal-encontro.jpg" alt="" decoding="async">
+        <img class="cinema-shot" src="foto/8mile-casal-trilhos.jpg" alt="" decoding="async">
+      </div>
       <div class="panel video">
         <div>
           <p class="eyebrow">Um último carinho</p>
@@ -285,6 +295,32 @@
       if (Number.isFinite(player.duration) && player.duration > 0) player.currentTime = (Number(progress.value) / 100) * player.duration;
     });
     player.addEventListener('ended', () => { status.textContent = 'Fim da canção — espero que tenha gostado ♡'; });
+
+    // Fundos de 8 Mile: stills promocionais/de imprensa, usados nesta montagem da etapa final.
+    const cinemaImages = [
+      'foto/8mile-casal-encontro.jpg',
+      'foto/8mile-casal-trilhos.jpg',
+      'foto/8mile-casal-rua.jpg',
+      'foto/8mile-casal-noite.jpg',
+      'foto/8mile-still-05.jpg'
+    ];
+    const cinemaShots = document.querySelectorAll('#etapa-3 .cinema-shot');
+    if (cinemaShots.length === 2 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      let currentImage = 0;
+      let activeShot = 0;
+      window.setInterval(() => {
+        const nextImage = (currentImage + 1) % cinemaImages.length;
+        const nextShot = 1 - activeShot;
+        const image = cinemaShots[nextShot];
+        image.onload = () => {
+          image.classList.add('is-active');
+          cinemaShots[activeShot].classList.remove('is-active');
+          activeShot = nextShot;
+          currentImage = nextImage;
+        };
+        image.src = cinemaImages[nextImage];
+      }, 7000);
+    }
   </script>
 </body>
 </html>
